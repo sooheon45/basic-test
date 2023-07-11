@@ -1,11 +1,28 @@
 <template>
-    <v-card outlined>
-        <RankPicker v-model="value" @selected="pick" :editMode="editMode" />
+    <v-card outlined @click="openDialog">
+        <v-card-title>
+            Rank : {{ referenceValue ? referenceValue.name : '' }}
+        </v-card-title>
+
+        <v-dialog v-model="pickerDialog">
+            <v-card>
+                <v-card-title>Rank</v-card-title>
+                <v-card-text>
+                    <RankPicker v-model="value" @selected="pick"/>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="deep-purple lighten-2" text @click="pickerDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-card>
 
 </template>
 
 <script>
+    const axios = require('axios').default;
+
     export default {
         name: 'RankId',
         components:{},
@@ -20,6 +37,7 @@
         data: () => ({
             newValue: {},
             pickerDialog: false,
+            referenceValue: null,
         }),
         async created() {
             if(!Object.values(this.value)[0]) {
@@ -30,6 +48,11 @@
             }
             else {
                 this.newValue = this.value;
+                var path = '/ranks';
+                var temp = await axios.get(axios.fixUrl(path + '/' +  Object.values(this.value)[0]));
+                if(temp.data) {
+                    this.referenceValue = temp.data
+                }
             }
         },
         watch: {
@@ -65,8 +88,24 @@
             change(){
                 this.$emit('change', this.value);
             },
+            openDialog() {
+                var path = '/ranks/';
+
+                if(this.editMode) {
+                    this.pickerDialog = true;
+                } else {
+                    this.pickerDialog = false;
+                    this.$router.push(path + this.value.id);
+                }
+            },
             async pick(val){
                 this.newValue = val;
+                var path = '/ranks';
+                var temp = await axios.get(axios.fixUrl(path + '/' + val.id));
+                if(temp.data) {
+                    this.referenceValue = temp.data;
+                }
+                this.referenceValue.nameField = val.nameField;
             },
         }
     }

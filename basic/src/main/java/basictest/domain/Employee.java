@@ -22,9 +22,17 @@ public class Employee {
     private Boolean isManager;
 
     @Embedded
+    @AttributeOverride(
+        name = "id",
+        column = @Column(name = "departmentIdId", nullable = true)
+    )
     private DepartmentId departmentId;
 
     @Embedded
+    @AttributeOverride(
+        name = "id",
+        column = @Column(name = "rankIdId", nullable = true)
+    )
     private RankId rankId;
 
     @ElementCollection
